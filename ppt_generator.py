@@ -5,7 +5,6 @@ from pptx.dml.color import RGBColor
 from concurrent.futures import ThreadPoolExecutor
 import os
 
-
 def add_text_to_frame(text_frame, text):
     text_frame.clear()
     text_frame.word_wrap = True
@@ -74,7 +73,6 @@ def create_presentation(topic, sections, slides_data, images_data, inverted_imag
 
     all_slide_content = []
 
-    # Prepare slide content in parallel
     with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(
@@ -85,8 +83,6 @@ def create_presentation(topic, sections, slides_data, images_data, inverted_imag
         ]
         for future in futures:
             all_slide_content.extend(future.result())
-
-    # Add slides sequentially (pptx is not thread-safe)
     for i, slide_info in enumerate(all_slide_content):
         slide = presentation.slides.add_slide(presentation.slide_layouts[5])
 
@@ -108,7 +104,6 @@ def create_presentation(topic, sections, slides_data, images_data, inverted_imag
                 image_width,
                 image_height
             )
-
     ppt_path = f"{topic.replace(' ', '_')}.pptx"
     presentation.save(ppt_path)
     return ppt_path
