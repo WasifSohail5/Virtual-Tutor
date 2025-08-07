@@ -19,11 +19,10 @@ def download_image(url, save_dir, index, downloaded_images):
         img.save(img_path, quality=95)
         downloaded_images[index] = img_path
     except Exception as e:
-        print(f"❌ Failed to download image {index+1} from {url}: {e}")
+        print(f"Failed to download image {index+1} from {url}: {e}")
         downloaded_images[index] = None
 
 def search_and_download_images(query, num_images=5):
-    # Set up headless Chrome
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--start-maximized')
@@ -35,12 +34,9 @@ def search_and_download_images(query, num_images=5):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     search_url = f"https://www.bing.com/images/search?q={query}&qft=+filterui:imagesize-large"
     driver.get(search_url)
-
-    # Scroll to load more images
     for _ in range(5):
         driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
         time.sleep(2)
-
     image_elements = driver.find_elements(By.CSS_SELECTOR, "img.mimg")
     image_urls = []
 
@@ -52,10 +48,8 @@ def search_and_download_images(query, num_images=5):
             break
 
     driver.quit()
-
     save_dir = os.path.abspath(query.replace(' ', '_'))
     os.makedirs(save_dir, exist_ok=True)
-
     downloaded_images = [None] * len(image_urls)
     threads = []
 
@@ -63,14 +57,9 @@ def search_and_download_images(query, num_images=5):
         thread = threading.Thread(target=download_image, args=(url, save_dir, i, downloaded_images))
         threads.append(thread)
         thread.start()
-
     for thread in threads:
         thread.join()
-
-    # Filter out failed downloads
     return [img for img in downloaded_images if img is not None]
-
-# Example usage
 if __name__ == "__main__":
     images = search_and_download_images("mars rover", num_images=5)
-    print("✅ Downloaded images:", images)
+    print("Downloaded images:", images)
